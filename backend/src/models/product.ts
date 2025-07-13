@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+// Интерфейс для файла
+export interface IFile {
+  fileName: string;
+  originalName: string;
+}
+
 // Интерфейс для продукта
 export interface IProduct extends Document {
   description?: string;
-  image: {
-    fileName: string;
-    originalName: string;
-  };
+  image: IFile
   title: string;
   category: string;
   price: number | null;
@@ -39,7 +42,7 @@ const productSchema: Schema<IProduct> = new mongoose.Schema({
     type: Number,
     default: null,
   },
-});
+}, { versionKey: false });
 
 // Экспорт модели
 const Product: Model<IProduct> = mongoose.model<IProduct>(

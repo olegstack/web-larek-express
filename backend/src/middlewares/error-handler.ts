@@ -37,8 +37,11 @@ const errorHandler = (
   }
 
   // Необработанная ошибка
-  console.error(err);
-  return res.status(500).json({ message: 'На сервере произошла ошибка' });
+  const statusCode = (err as any).statusCode || 500;
+  const message = statusCode === 500
+    ? 'На сервере произошла ошибка'
+    : (err as any).message;
+  return res.status(statusCode).json({ message });
 };
 
 export default errorHandler;

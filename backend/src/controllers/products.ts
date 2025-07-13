@@ -11,7 +11,7 @@ export const getProducts = async (
   next: NextFunction,
 ) => {
   try {
-    const products = await Product.find({}).select('-__v');
+    const products = await Product.find({});
     return res.send({ items: products, total: products.length });
   } catch (err) {
     return next(err);

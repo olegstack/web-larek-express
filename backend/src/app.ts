@@ -3,6 +3,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
 
+import { rateLimit } from 'express-rate-limit';
+import { NotFoundError } from './errors/not-found-error';
 import config from './config';
 import productRoutes from './routes/product';
 import orderRoutes from './routes/order';
@@ -12,8 +14,17 @@ import errorHandler from './middlewares/error-handler';
 const { PORT, DB_ADDRESS } = config;
 const app = express();
 
+// Лимитер запросов — защита от DoS
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 100, // максимум 100 запросов с одного IP за 15 минут
+  message: 'Слишком много запросов с этого IP, попробуйте позже.',
+});
+
 // Подключение логгера запросов
 app.use(requestLogger);
+
+app.use(limiter);
 
 // Разрешаем CORS
 app.use(cors());
@@ -33,16 +44,15 @@ mongoose.connect(DB_ADDRESS);
 app.use('/', productRoutes);
 app.use('/', orderRoutes);
 
+app.use('*', (_req, _res, next) => {
+  next(new NotFoundError('Маршрут не найден'));
+}); // обязательно подключать до логера ошибок, иначе переход не будет записан в логи
+
 // Логгер ошибок
 app.use(errorLogger);
 
 // Централизованный обработчик ошибок
 app.use(errorHandler);
-
-// Fallback для SPA
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
-});
 
 // Запуск сервера
 app.listen(PORT, () => {

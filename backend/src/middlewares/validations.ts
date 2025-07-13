@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate';
 import { RequestHandler } from 'express';
 
-const validateOrder: RequestHandler = celebrate({
+export const validateOrder: RequestHandler = celebrate({
   [Segments.BODY]: Joi.object().keys({
     payment: Joi.string().valid('card', 'online').required(),
     email: Joi.string().email().required(),
@@ -12,4 +12,15 @@ const validateOrder: RequestHandler = celebrate({
   }),
 });
 
-export default validateOrder;
+export const validateProduct: RequestHandler = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    title: Joi.string().min(2).max(30).required(),
+    category: Joi.string().required(),
+    price: Joi.number().allow(null),
+    description: Joi.string().optional(),
+    image: Joi.object({
+      fileName: Joi.string().required(),
+      originalName: Joi.string().required(),
+    }).required(),
+  }),
+});
